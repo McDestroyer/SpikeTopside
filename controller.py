@@ -6,7 +6,7 @@ import pygame
 from pygame.locals import *
 
 
-JOY_DEADBAND = 0.05
+JOY_DEADBAND = 0.15
 
 def deadband(x, deadband):
     if abs(x) > deadband:
