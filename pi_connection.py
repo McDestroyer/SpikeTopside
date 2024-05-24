@@ -9,13 +9,30 @@ length_packet_size = struct.calcsize("L")
 
 BUFFER_SIZE = 8096
 
+TIMEOUT_MSG = "Timed out while recv'ing packet (got {}, wanted {} more bytes)"
+
 class PiConnection:
-    """Interface for communicating with a Raspberry Pi."""
+    """Interface for communicating with a Raspberry Pi.
+
+    Attributes:
+        self.imu - dictionary containing IMU information if available, else None
+        self.frames - list of latest opencv frames from each camera
+        
+    Methods:
+        self.update() - perform a data exchange with the Pi
+        self.set_camera() - configure camera compression parameters
+        self.set_motors() - set motor outputs
+    """
 
     TCP_IP = "172.17.254.121"
     TCP_PORT = 5005
 
     def __init__(self, recv_timeout=5):
+        """Initialize a PiConnection.
+
+        Args:
+            recv_timeout (int, optional): Time to wait for a reply from Pi. Defaults to 5.
+        """
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect((self.TCP_IP, self.TCP_PORT))
 
@@ -25,11 +42,12 @@ class PiConnection:
         self.imu = None
 
         self.frames = []
-        self.camera = False
+        self.cameras = 0
 
         self.recv_timeout = recv_timeout
 
     def set_camera(self, fps=None, quality=None, height=None):
+        """Set camera compression parameters."""
         if fps is not None:
             self.config["fps"] = fps
         if quality is not None:
@@ -38,9 +56,11 @@ class PiConnection:
             self.config["height"] = height
 
     def set_motors(self, motors):
+        """Set motor outputs."""
         self.motors = motors[:]
 
     def update(self):
+        """Perform a data exchange with the Pi and PC"""
         out_data = {"config": self.config, "motors": self.motors}
         self._send(pickle.dumps(out_data))
 
@@ -50,30 +70,53 @@ class PiConnection:
 
         self.frames = []
         for _ in range(self.cameras):
+            # decompress frames
             self.frames.append(decode(self._recv()))
 
     def _send(self, message):
         """Send a message."""
+        # first send the message length
         self.s.send(struct.pack("L", len(message)))
+
+        # then send message BUFFER_SIZE bytes at a time
         while message:
             self.s.send(message[:BUFFER_SIZE])
             message = message[BUFFER_SIZE:]
 
     def _recv(self):
         """Receive a message."""
+        # first get the length of the message
         length_bytes = b""
+
         start = time.time()
         while len(length_bytes) < length_packet_size:
-            length_bytes += self.s.recv(length_packet_size - len(length_bytes))
+            remaining = length_packet_size - len(length_bytes)
+            # attempt to read remaining bytes
+            length_bytes += self.s.recv(remaining)
+
+            # throw exception if timeout occurs
             if time.time() - start > self.recv_timeout:
-                raise Exception(f"Timed out while recieving packet length (got {length_bytes}, wanted {length_packet_size-len(length_bytes)} more bytes)")
+                raise Exception(
+                    TIMEOUT_MSG.format(length_bytes, remaining)
+                )
+
+        # convert to an int
         length = struct.unpack("L", length_bytes)[0]
+
+        # now get the message itself
         msg = b""
+
         start = time.time()
         while len(msg) < length:
+            # attempt to read remaining bytes
             msg += self.s.recv(length - len(msg))
+
+            # same timeout mechanics
             if time.time() - start > self.recv_timeout:
-                raise Exception(f"Timed out while recieving packet (got {msg}, wanted {length-len(msg)} more bytes)")
+                raise Exception(
+                    TIMEOUT_MSG.format(msg, length-len(msg))
+                )
+
         return msg
 
     def close(self):

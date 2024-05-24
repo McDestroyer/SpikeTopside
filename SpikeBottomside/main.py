@@ -17,21 +17,29 @@ pc = PcConnect()
 
 start = time.time()
 
+# none of this is going to stay most likely
+
 try:
 	while 1:
 		imu.update()
 		try:
 			data_in = pc.recv()
 			if data_in is not None:
+				# prepare data packet and send it
 				data = {"cameras": len(cams), "imu": imu.data()}
 				pc.send(pickle.dumps(data))
+    
+				# load data from PC
 				msg = pickle.loads(data_in)
 				config = msg["config"]
+
+				# Configure cameras and send frames
 				for cam in cams:
 					cam.fps = config.get("fps", cam.fps)
 					cam.quality = config.get("quality", cam.quality)
 					cam.height = config.get("height", cam.height)
 					pc.send(cam.capture_frame())
+
 		except ConnectionResetError:
 			pc.reconnect()
 		except Exception as e:

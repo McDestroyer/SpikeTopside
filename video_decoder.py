@@ -1,18 +1,23 @@
 import cv2
 import pickle
 
-HEIGHT = 600
 
-def decode(frame_data):
+def decode(frame_data, height=600):
+    """Load and decompress a pickled frame"""
     img = pickle.loads(frame_data)
+
+    # handles camera disconnect
     if img is None:
         return None
+
+    # decompress
     frame = cv2.imdecode(img, 1)
 
-    h,w,c = frame.shape
+    h, w, c = frame.shape
 
-    scaling = h/HEIGHT
+    # scale so height is constant regardless of actual resolution
+    scaling = h / height
 
-    frame = cv2.resize(frame, (int(w/scaling), int(h/scaling)))
+    frame = cv2.resize(frame, (int(w / scaling), int(h / scaling)))
 
     return frame
