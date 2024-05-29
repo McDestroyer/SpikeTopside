@@ -4,7 +4,7 @@ import numpy as np
 # best to keep it obvious what it's doing and quick to debug
 
 # use to set polarity and adjust power
-motor_coeffs = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+motor_coeffs = np.array([-0.6, 0.6, -0.6, -0.6, .75, .75])
 
 
 # same matrix as BlueOS, but I split it into the vertical and planar components
@@ -44,3 +44,7 @@ def motor_speed_calc(roll=0, pitch=0, yaw=0, throttle=0, forward=0, lateral=0):
 
     # multiply coeffs in
     return (vert + plan) * motor_coeffs
+
+def motor_speed_pwm(motors, min_pwm=1100, max_pwm=1900):
+    slope = (max_pwm-min_pwm)/(1.0 - (-1.0))
+    return slope*(motors - 1) + max_pwm

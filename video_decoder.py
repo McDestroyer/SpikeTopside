@@ -2,7 +2,7 @@ import cv2
 import pickle
 
 
-def decode(frame_data, height=600):
+def decode(frame_data, height=300):
     """Load and decompress a pickled frame"""
     img = pickle.loads(frame_data)
 

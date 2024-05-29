@@ -72,8 +72,11 @@ def nums_to_bytes(numbers) -> bytes:
 
 
 class Arduino:
-    def __init__(self, port: str = '/dev/ttyACM0', baud_rate: int = 115200) -> None:
+    def __init__(self, port: str = '/dev/ttyACM1', baud_rate: int = 115200) -> None:
         self.serial_port = serial.Serial(port, baud_rate)
+    
+    def send_stop(self):
+        self.send_pwm([1500] * 6)
 
     def is_open(self) -> bool:
         """Check if the serial connection is open.
@@ -137,12 +140,12 @@ if __name__ == "__main__":
 
     ard.setup()
 
+
     try:
         while 1:
-            response: str = ard.get_message()
             pwm_values: tuple[int, int, int, int, int, int] = (1600, 1700, 1700, 1700, 1700, 1700)
             ard.send_pwm(pwm_values)
-    except KeyboardInterrupt:
+    except ValueError:
         pass
 
     ard.close()

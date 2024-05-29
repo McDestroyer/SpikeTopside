@@ -10,6 +10,8 @@ from pi_connection import PiConnection
 from motors import motor_speed_calc
 from controller import Controller
 
+from gui import show_frame, window, get_config
+
 pygame.init()
 
 pi = PiConnection()
@@ -26,24 +28,30 @@ try:
         yaw, pitch = cont.get_right()
         throttle = cont.get_trigger()
 
+
         # convert to motor speeds
         motor_speeds = motor_speed_calc(0, pitch, yaw, throttle, forward, lateral)
 
         # set motors
         pi.set_motors(motor_speeds)
 
+        pi.set_camera(**get_config())
+
         # perform exchange w/Pi
         pi.update()
 
-        # print IMU state
-        print(pi.imu)
-
         # show cameras
-        for i, frame in enumerate(pi.frames):
-            if frame is None:
-                continue
-            cv2.imshow(f"Frame {i}", frame)
+       # for i, frame in enumerate(pi.frames):
+        #    if frame is None:
+         #       continue
+          #  cv2.imshow(f"Frame {i}", frame)
+
+        show_frame(pi.frames)
+        
+        window.update()
+
+      #  cv2.waitKey(1)
 
 finally:
     pi.close()
-    cv2.destroyAllWindows()
+  #  cv2.destroyAllWindows()

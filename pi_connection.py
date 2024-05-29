@@ -4,6 +4,7 @@ import pickle
 import time
 
 from video_decoder import decode
+from motors import motor_speed_pwm
 
 length_packet_size = struct.calcsize("L")
 
@@ -24,7 +25,7 @@ class PiConnection:
         self.set_motors() - set motor outputs
     """
 
-    TCP_IP = "172.17.254.121"
+    TCP_IP = "169.254.6.161"
     TCP_PORT = 5005
 
     def __init__(self, recv_timeout=5):
@@ -34,6 +35,7 @@ class PiConnection:
             recv_timeout (int, optional): Time to wait for a reply from Pi. Defaults to 5.
         """
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.s.connect((self.TCP_IP, self.TCP_PORT))
 
         self.config = {"fps": 20, "quality": 40, "height": 200}
@@ -48,16 +50,16 @@ class PiConnection:
 
     def set_camera(self, fps=None, quality=None, height=None):
         """Set camera compression parameters."""
-        if fps is not None:
+        if fps is not None and fps > 0:
             self.config["fps"] = fps
-        if quality is not None:
+        if quality is not None and quality > 0:
             self.config["quality"] = quality
-        if height is not None:
+        if height is not None and height > 0:
             self.config["height"] = height
 
     def set_motors(self, motors):
         """Set motor outputs."""
-        self.motors = motors[:]
+        self.motors = list(motor_speed_pwm(motors))
 
     def update(self):
         """Perform a data exchange with the Pi and PC"""

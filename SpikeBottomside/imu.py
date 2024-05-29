@@ -10,6 +10,7 @@ class IMU:
         self.i2c = i2c
         try:
             self.sensor = LSM6DSOX(i2c)
+            self.working = True
         except ValueError:
             self.working = False
 
@@ -31,8 +32,6 @@ class IMU:
         self.gyro_x_off = 0
         self.gyro_y_off = 0
         self.gyro_z_off = 0
-        
-        self.working = True
         
     def attempt_restart(self):
         try:
