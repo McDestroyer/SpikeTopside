@@ -72,8 +72,8 @@ def nums_to_bytes(numbers) -> bytes:
 
 
 class Arduino:
-    def __init__(self, port: str = '/dev/ttyACM1', baud_rate: int = 115200) -> None:
-        self.serial_port = serial.Serial(port, baud_rate)
+    def __init__(self, port: str = '/dev/ttyACM0', baud_rate: int = 9600) -> None:
+        self.serial_port = serial.Serial(port, baud_rate, timeout=0.02)
     
     def send_stop(self):
         self.send_pwm([1500] * 6)
@@ -145,6 +145,8 @@ if __name__ == "__main__":
         while 1:
             pwm_values: tuple[int, int, int, int, int, int] = (1600, 1700, 1700, 1700, 1700, 1700)
             ard.send_pwm(pwm_values)
+            while ard.serial_port.in_waiting:
+                print(ard.serial_port.read())
     except ValueError:
         pass
 

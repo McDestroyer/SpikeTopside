@@ -25,7 +25,8 @@ class PiConnection:
         self.set_motors() - set motor outputs
     """
 
-    TCP_IP = "169.254.6.161"
+
+    TCP_IP = "172.17.254.121"
     TCP_PORT = 5005
 
     def __init__(self, recv_timeout=5):

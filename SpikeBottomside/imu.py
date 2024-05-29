@@ -5,12 +5,11 @@ from adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 gyro_deadband = 0.02 # deg/sec
 
 class IMU:
-    def __init__(self, i2c, theta=0, phi=0, alpha=0.8):
+    def __init__(self, i2c, theta=0, phi=0, alpha=0.5):
         self.working = True
         self.i2c = i2c
         try:
             self.sensor = LSM6DSOX(i2c)
-            self.working = True
         except ValueError:
             self.working = False
 
@@ -53,6 +52,8 @@ class IMU:
         }
 
     def calibrate_orientation(self, duration=5):
+        if not self.working:
+            return
         print("Calibrating IMU...")
         self.roll = 0
         self.pitch = 0

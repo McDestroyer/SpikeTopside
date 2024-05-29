@@ -46,7 +46,7 @@ try:
          #       continue
           #  cv2.imshow(f"Frame {i}", frame)
 
-        show_frame(pi.frames)
+        show_frame(pi.frames, pi.imu)
         
         window.update()
 

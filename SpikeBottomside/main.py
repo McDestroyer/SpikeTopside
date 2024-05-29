@@ -11,7 +11,7 @@ import time
 
 cams = []
 
-for i in range(8):
+for i in (0, 4):
 	cam = Camera(i, 50, 100, 30)
 	if cam.working:
 		cams.append(cam)
@@ -19,8 +19,8 @@ for i in range(8):
 print("Found", len(cams), "cameras")
 
 print("Connecting to Arduino...")
-ard = Arduino()
-ard.setup()
+#ard = Arduino()
+#ard.setup()
 
 i2c = board.I2C()
 imu = IMU(i2c)
@@ -34,20 +34,22 @@ try:
 		imu.update()
 		try:
 			data_in = pc.recv()
+			imu.update()
 			if data_in is not None:
 				data = {"cameras": len(cams), "imu": imu.data()}
 				pc.send(pickle.dumps(data))
 				msg = pickle.loads(data_in)
 				config = msg["config"]
 				for cam in cams:
+					imu.update()
 					cam.fps = config.get("fps", cam.fps)
 					cam.quality = config.get("quality", cam.quality)
 					cam.height = config.get("height", cam.height)
 					pc.send(cam.capture_frame())
 				
 				motors = msg.get("motors", [1500]*6)
-				ard.send_pwm(motors)
-				ard.get_message()
+				#ard.send_pwm(motors)
+				#ard.get_message()
 		except ConnectionResetError:
 			pc.reconnect()
 		except Exception as e:

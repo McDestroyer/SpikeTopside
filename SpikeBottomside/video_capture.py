@@ -3,7 +3,7 @@ import pickle
 import time
 
 class Camera:
-        def __init__(self, _id, quality, height, fps, retry_interval=5):
+        def __init__(self, _id, quality, height, fps, retry_interval=10):
                 self.last_working = time.time() - retry_interval - 1
                 self.retry_interval = retry_interval
                 self.height = 200
@@ -30,7 +30,6 @@ class Camera:
                 ret, frame = self.cap.read()
                 
                 if frame is None:
-                        print("No frame")
                         self.working = False
                         return pickle.dumps(None)
                         
