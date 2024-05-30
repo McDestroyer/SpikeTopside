@@ -13,16 +13,16 @@ class Dashboard(tk.Frame):
 
         self.displays = {}
 
-    def put_scale(self, name, row, column, min_, max_, default):
-        scale = tk.Scale(self, from_=min_, to=max_, orient=tk.HORIZONTAL)
+    def put_scale(self, name, row, column, min_, max_, default, rspan=1, cspan=1):
+        scale = tk.Scale(self, from_=min_, to=max_, orient=tk.HORIZONTAL, length=300)
         scale.set(default)
-        scale.grid(row=row, column=column)
+        scale.grid(row=row, column=column, rowspan=rspan, columnspan=cspan)
         self.scales[name] = scale
 
     def get_scale(self, name):
         return self.scales[name].get()
     
-    def put_entry(self, name, row, column, converter, default=""):
+    def put_entry(self, name, row, column, converter, default="", rspan=1, cspan=1):
         def validator_fn(x):
             if x == "":
                 return True
@@ -35,7 +35,7 @@ class Dashboard(tk.Frame):
 
         entry = tk.Entry(self, validate="all", validatecommand=vcmd)
         entry.insert(0, default)
-        entry.grid(row=row, column=column)
+        entry.grid(row=row, column=column, rowspan=rspan, columnspan=cspan)
 
         self.entries[name] = (converter, entry)
 
@@ -48,19 +48,19 @@ class Dashboard(tk.Frame):
         except:
             return default
 
-    def put_label(self, name, row, column, text):
+    def put_label(self, name, row, column, text, rspan=1, cspan=1):
         label = tk.Label(self, text=text)
-        label.grid(row=row, column=column)
+        label.grid(row=row, column=column, rowspan=rspan, columnspan=cspan)
         self.labels[name] = label
 
-    def put_image(self, name, row, column, width, height, filename):
+    def put_image(self, name, row, column, width, height, filename, rspan=1, cspan=1):
         hypotenuse = (width**2 + height**2)**0.5
 
         coord = hypotenuse/2
 
         canvas = tk.Canvas(self, width=hypotenuse, height=hypotenuse)
 
-        canvas.grid(row=row, column=column)
+        canvas.grid(row=row, column=column, rowspan=rspan, columnspan=cspan)
 
         image = Image.open(filename)
         image.thumbnail((width, height), Image.LANCZOS)
@@ -78,9 +78,9 @@ class Dashboard(tk.Frame):
         image_id = canvas.create_image(coord, coord, image=tkimage)
         self.images[name] = (image, tkimage, image_id, coord, canvas)
 
-    def put_display(self, name, row, column):
+    def put_display(self, name, row, column, rspan=1, cspan=1):
         display = tk.Label(self)
-        display.grid(row=row, column=column)
+        display.grid(row=row, column=column, rowspan=rspan, columnspan=cspan)
 
         self.displays[name] = display
 

@@ -1,3 +1,4 @@
+import sys
 import cv2
 
 # silences annoying welcome message
@@ -25,59 +26,72 @@ root = tk.Tk()
 root.wm_title("ROV monitor")
 dash = Dashboard(root)
 
-dash.put_label("Height", 2, 1, "Height")
-dash.put_label("FPS", 3, 1, "FPS")
-dash.put_label("Quality", 4, 1, "Quality")
-dash.put_label("Temp interval", 5, 1, "Temp interval")
+# Lables
+dash.put_label("Height",        2, 2,   "Height")
+dash.put_label("FPS",           3, 2,   "FPS")
+dash.put_label("Quality",       4, 2,   "Quality")
+dash.put_label("Temp interval", 5, 2,   "Temp interval")
 
-dash.put_scale("Height", 2, 2, 50, 300, 150)
-dash.put_scale("FPS", 3, 2, 1, 30, 15)
-dash.put_scale("Quality", 4, 2, 1, 100, 75)
-dash.put_scale("Temp interval", 5, 2, 1, 3000, 1000)
+# Slider bars
+dash.put_scale("Height",        2, 3,   50, 300, 150, cspan=2)
+dash.put_scale("FPS",           3, 3,   1, 30, 15, cspan=2)
+dash.put_scale("Quality",       4, 3,   1, 100, 75, cspan=2)
+dash.put_scale("Temp interval", 5, 3,   1, 3000, 1000, cspan=2)
 
-dash.put_image("topview", 6, 0, 200, 200, "assets/topview.png")
-dash.put_image("sideview", 6, 4, 300, 300, "assets/sideview.png")
+# Orientation markers
+dash.put_image("topview",       1, 2,   125, 125, "assets/topview.png", cspan=2)
+dash.put_image("sideview",      1, 4,   125, 125, "assets/sideview.png")
 
-dash.put_display("frame0", 1, 0)
-dash.put_display("frame1", 1, 4)
+# Cameras
+dash.put_display("frame0",      1, 0,   rspan=5)
+dash.put_display("frame1",      6, 0,   rspan=5)
 
 dash.pack()
 
-try:
-    while 1:
-        # update controller
-        cont.update()
+while True:
+    pi.setup_socket()
+    try:
+        while 1:
+            # Update controller
+            cont.update()
 
-        # grab movement commands
-        lateral, forward = cont.get_left()
-        yaw, pitch = cont.get_right()
-        throttle = cont.get_trigger()
+            # Grab movement commands
+            lateral, forward = cont.get_left()
+            yaw, pitch = cont.get_right()
+            throttle = cont.get_trigger()
 
 
-        # convert to motor speeds
-        motor_speeds = motor_speed_calc(0, pitch, yaw, throttle, forward, lateral)
+            # convert to motor speeds
+            motor_speeds = motor_speed_calc(0, pitch, yaw, throttle, forward, lateral)
 
-        # set motors
-        pi.set_motors(motor_speeds)
+            # set motors
+            pi.set_motors(motor_speeds)
 
-        pi.set_camera(fps=dash.get_scale("FPS"),
-                      quality=dash.get_scale("Quality"),
-                      height=dash.get_scale("Height"))
-        pi.set_check_temp_time(dash.get_scale("Temp interval") / 1000.0)
-        # perform exchange w/Pi
-        pi.update()
+            pi.set_camera(fps=dash.get_scale("FPS"),
+                        quality=dash.get_scale("Quality"),
+                        height=dash.get_scale("Height"))
+            pi.set_check_temp_time(dash.get_scale("Temp interval") / 1000.0)
+            # perform exchange w/Pi
+            pi.update()
 
-        dash.rotate_image("topview", pi.imu.get("yaw", 0))
-        dash.rotate_image("sideview", pi.imu.get("pitch", 0))
+            dash.rotate_image("topview", pi.imu.get("yaw", 0))
+            dash.rotate_image("sideview", pi.imu.get("pitch", 0))
 
-        for i in range(min(2, len(pi.frames))):
-            dash.update_display(f"frame{i}", pi.frames[i])
+            for i in range(min(2, len(pi.frames))):
+                dash.update_display(f"frame{i}", pi.frames[i])
 
-        print(pi.temp)
+            print(pi.temp)
 
-        #show_frame(pi.frames, pi.imu)
-        
-        root.update()
+            #show_frame(pi.frames, pi.imu)
+            
+            root.update()
 
-finally:
-    pi.close()
+    except ConnectionError as e:
+        print(e.with_traceback())
+    except tk.TclError:
+        pi.close()
+        print("Window closed.")
+        sys.exit()
+    finally:
+        pi.close()
+    

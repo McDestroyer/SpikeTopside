@@ -35,9 +35,7 @@ class PiConnection:
         Args:
             recv_timeout (int, optional): Time to wait for a reply from Pi. Defaults to 5.
         """
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        self.s.connect((self.TCP_IP, self.TCP_PORT))
+        self.s = None
 
         self.config = {"fps": 20, "quality": 40, "height": 200}
         self.motors = []
@@ -51,6 +49,12 @@ class PiConnection:
         self.recv_timeout = recv_timeout
 
         self.check_temp_time = None
+
+    def setup_socket(self) -> None:
+        """Initialize the socket connection"""
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        self.s.connect((self.TCP_IP, self.TCP_PORT))
 
     def set_camera(self, fps=None, quality=None, height=None):
         """Set camera compression parameters."""
@@ -105,7 +109,7 @@ class PiConnection:
             remaining = length_packet_size - len(length_bytes)
             # throw exception if timeout occurs
             if time.time() - start > self.recv_timeout:
-                raise Exception(
+                raise ConnectionError(
                     TIMEOUT_MSG.format(length_bytes, remaining)
                 )
             
