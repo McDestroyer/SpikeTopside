@@ -1,0 +1,116 @@
+import cv2
+import tkinter as tk
+from PIL import Image, ImageTk
+
+class Dashboard(tk.Frame):
+    def __init__(self, master, *args, **kwargs):
+        super().__init__(master, *args, **kwargs)
+
+        self.scales = {}
+        self.labels = {}
+        self.entries = {}
+        self.images = {}
+
+        self.displays = {}
+
+    def put_scale(self, name, row, column, min_, max_, default):
+        scale = tk.Scale(self, from_=min_, to=max_, orient=tk.HORIZONTAL)
+        scale.set(default)
+        scale.grid(row=row, column=column)
+        self.scales[name] = scale
+
+    def get_scale(self, name):
+        return self.scales[name].get()
+    
+    def put_entry(self, name, row, column, converter, default=""):
+        def validator_fn(x):
+            if x == "":
+                return True
+            try:
+                converter(x)
+                return True
+            except:
+                return False
+        vcmd = (self.register(validator_fn), "%P")
+
+        entry = tk.Entry(self, validate="all", validatecommand=vcmd)
+        entry.insert(0, default)
+        entry.grid(row=row, column=column)
+
+        self.entries[name] = (converter, entry)
+
+    def get_entry(self, name, default):
+        converter, entry = self.entries[name]
+
+        text = entry.get()
+        try:
+            return converter(text)
+        except:
+            return default
+
+    def put_label(self, name, row, column, text):
+        label = tk.Label(self, text=text)
+        label.grid(row=row, column=column)
+        self.labels[name] = label
+
+    def put_image(self, name, row, column, width, height, filename):
+        hypotenuse = (width**2 + height**2)**0.5
+
+        coord = hypotenuse/2
+
+        canvas = tk.Canvas(self, width=hypotenuse, height=hypotenuse)
+
+        canvas.grid(row=row, column=column)
+
+        image = Image.open(filename)
+        image.thumbnail((width, height), Image.LANCZOS)
+
+        tkimage = ImageTk.PhotoImage(image)
+
+        image_id = canvas.create_image(coord, coord, image=tkimage)
+
+        self.images[name] = (image, tkimage, image_id, coord, canvas)
+
+    def rotate_image(self, name, angle):
+        image, tkimage, image_id, coord, canvas = self.images[name]
+        tkimage = ImageTk.PhotoImage(image.rotate(angle, expand=True))
+        canvas.delete(image_id)
+        image_id = canvas.create_image(coord, coord, image=tkimage)
+        self.images[name] = (image, tkimage, image_id, coord, canvas)
+
+    def put_display(self, name, row, column):
+        display = tk.Label(self)
+        display.grid(row=row, column=column)
+
+        self.displays[name] = display
+
+    def update_display(self, name, frame):
+        display = self.displays[name]
+        frame = cv2.flip(frame, 1)
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        img = Image.fromarray(cv2image)
+        imgtk = ImageTk.PhotoImage(image=img)
+        display.imgtk = imgtk
+        display.configure(image=imgtk)
+        self.displays[name] = display
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+
+    dashboard = Dashboard(root)
+
+    dashboard.put_label("Label", 1, 2, "Hi!")
+    dashboard.put_scale("Scale1", 1, 3, 12, 100, 50)
+
+    dashboard.put_entry("Place", 2, 1, float, "23")
+
+    dashboard.put_image("topside", 150, 125, 200, 200, "assets/topview.png")
+
+    dashboard.pack()
+
+    while 1:
+        dashboard.rotate_image("topside", dashboard.get_entry("Place", 0))
+
+        root.update_idletasks()
+        root.update()

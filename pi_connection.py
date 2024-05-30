@@ -29,7 +29,7 @@ class PiConnection:
     TCP_IP = "172.17.254.121"
     TCP_PORT = 5005
 
-    def __init__(self, recv_timeout=5):
+    def __init__(self, recv_timeout=3):
         """Initialize a PiConnection.
 
         Args:
@@ -43,11 +43,14 @@ class PiConnection:
         self.motors = []
 
         self.imu = None
+        self.temp = None
 
         self.frames = []
         self.cameras = 0
 
         self.recv_timeout = recv_timeout
+
+        self.check_temp_time = None
 
     def set_camera(self, fps=None, quality=None, height=None):
         """Set camera compression parameters."""
@@ -62,14 +65,20 @@ class PiConnection:
         """Set motor outputs."""
         self.motors = list(motor_speed_pwm(motors))
 
+    def set_check_temp_time(self, check_temp_time):
+        self.check_temp_time = check_temp_time
+
     def update(self):
         """Perform a data exchange with the Pi and PC"""
         out_data = {"config": self.config, "motors": self.motors}
+        if self.check_temp_time is not None:
+            out_data["check_temp_time"] = self.check_temp_time
         self._send(pickle.dumps(out_data))
 
         in_data = pickle.loads(self._recv())
         self.cameras = in_data["cameras"]
         self.imu = in_data["imu"]
+        self.temp = in_data["temp"]
 
         self.frames = []
         for _ in range(self.cameras):
@@ -94,14 +103,15 @@ class PiConnection:
         start = time.time()
         while len(length_bytes) < length_packet_size:
             remaining = length_packet_size - len(length_bytes)
-            # attempt to read remaining bytes
-            length_bytes += self.s.recv(remaining)
-
             # throw exception if timeout occurs
             if time.time() - start > self.recv_timeout:
                 raise Exception(
                     TIMEOUT_MSG.format(length_bytes, remaining)
                 )
+            
+            # attempt to read remaining bytes
+            length_bytes += self.s.recv(remaining)
+
 
         # convert to an int
         length = struct.unpack("L", length_bytes)[0]
@@ -111,14 +121,14 @@ class PiConnection:
 
         start = time.time()
         while len(msg) < length:
-            # attempt to read remaining bytes
-            msg += self.s.recv(length - len(msg))
-
             # same timeout mechanics
             if time.time() - start > self.recv_timeout:
                 raise Exception(
                     TIMEOUT_MSG.format(msg, length-len(msg))
                 )
+            # attempt to read remaining bytes
+            msg += self.s.recv(length - len(msg))
+
 
         return msg
 
