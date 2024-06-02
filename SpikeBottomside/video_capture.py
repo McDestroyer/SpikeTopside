@@ -1,6 +1,7 @@
 import cv2
 import pickle
 import time
+from shell import get_cameras
 
 class Camera:
         def __init__(self, _id, quality, height, fps, retry_interval=10):
@@ -58,6 +59,10 @@ class Camera:
 
         def retry(self):
                 print(f"Connecting camera {self._id}...")
+                if self._id not in get_cameras():
+                        print("Failed.")
+                        self.last_working = time.time()
+                        return
                 self.cap = cv2.VideoCapture(self._id)
                 self.working = self.open()
                 self.last_working = time.time()

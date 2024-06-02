@@ -26,7 +26,7 @@ class PiConnection:
     """
 
 
-    TCP_IP = "172.17.254.121"
+    TCP_IP = "169.254.6.161"
     TCP_PORT = 5005
 
     def __init__(self, recv_timeout=3):

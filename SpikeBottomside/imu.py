@@ -5,7 +5,7 @@ from adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 gyro_deadband = 0.02 # deg/sec
 
 class IMU:
-    def __init__(self, i2c, theta=0, phi=0, alpha=0.5):
+    def __init__(self, i2c, theta=0, phi=0, alpha=0.8):
         self.working = True
         self.i2c = i2c
         try:
@@ -41,7 +41,7 @@ class IMU:
             
     def data(self):
         if not self.working:
-            return None
+            return {}
         return {
             "roll": self.roll,
             "pitch": self.pitch,
@@ -138,7 +138,7 @@ class IMU:
         if abs(gyro_z) < gyro_deadband:
             gyro_z = 0
 
-        pitch_acc = math.degrees(math.atan2(accel_x, math.sqrt(accel_z ** 2 + accel_y ** 2)))
+        pitch_acc = -math.degrees(math.atan2(accel_x, math.sqrt(accel_z ** 2 + accel_y ** 2)))
         roll_acc = math.degrees(math.atan2(accel_y, math.sqrt(accel_z ** 2 + accel_x ** 2)))
         #pitch_acc = math.degrees(math.atan2(math.sqrt(accel_x ** 2 + accel_y ** 2), accel_z))
 
