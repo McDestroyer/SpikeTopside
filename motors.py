@@ -4,15 +4,15 @@ import numpy as np
 # best to keep it obvious what it's doing and quick to debug
 
 # use to set polarity and adjust power
-motor_coeffs = np.array([-0.6, 0.6, -0.6, -0.6, .75, .75])
+motor_coeffs = np.array([-0.6, 0.6, -0.6, -0.6, 1.0, 1.0])
 
 
 # same matrix as BlueOS, but I split it into the vertical and planar components
 # for convienience
-plan_m = np.array([[0.0,  0.0,  1.0,  0.0, -1.0,  1.0],
-                   [0.0,  0.0, -1.0,  0.0, -1.0, -1.0],
+plan_m = np.array([[0.0,  0.0,  1.0,  0.0,  1.0, -1.0],
                    [0.0,  0.0, -1.0,  0.0,  1.0,  1.0],
-                   [0.0,  0.0,  1.0,  0.0,  1.0, -1.0],
+                   [0.0,  0.0,  1.0,  0.0,  1.0,  1.0],
+                   [0.0,  0.0, -1.0,  0.0,  1.0, -1.0],
                    [0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
                    [0.0,  0.0,  0.0,  0.0,  0.0,  0.0]])
 
@@ -25,8 +25,6 @@ vert_m = np.array([[0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
 
 def motor_speed_calc_raw(matrix, roll=0, pitch=0, yaw=0, throttle=0, forward=0, lateral=0):
     v = np.array([roll, pitch, yaw, throttle, forward, lateral])
-    # square input while maintaining sign to recover deadband
-    v = v * v * np.sign(v)
     # do initial multiplication
     m = matrix @ v
     # if we get a zero vector, we're done

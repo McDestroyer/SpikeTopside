@@ -33,7 +33,7 @@ class PiConnection:
         """Initialize a PiConnection.
 
         Args:
-            recv_timeout (int, optional): Time to wait for a reply from Pi. Defaults to 5.
+            recv_timeout (int, optional): Time to wait for a reply from Pi. Defaults to 3.
         """
         self.s = None
 

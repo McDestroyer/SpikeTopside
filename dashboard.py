@@ -52,6 +52,9 @@ class Dashboard(tk.Frame):
         label = tk.Label(self, text=text)
         label.grid(row=row, column=column, rowspan=rspan, columnspan=cspan)
         self.labels[name] = label
+    
+    def set_label(self, name, text):
+        self.labels[name].config(text=text)
 
     def put_image(self, name, row, column, width, height, filename, rspan=1, cspan=1):
         hypotenuse = (width**2 + height**2)**0.5

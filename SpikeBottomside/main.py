@@ -7,7 +7,6 @@ from arduino_communicator import Arduino
 from shell import get_temp, get_cameras
 import board
 import pickle
-import cv2
 import time
 
 cams = []
@@ -20,8 +19,8 @@ for i in get_cameras():
 print("Found", len(cams), "cameras")
 
 print("Connecting to Arduino...")
-#ard = Arduino()
-#ard.setup()
+ard = Arduino()
+ard.setup()
 
 i2c = board.I2C()
 imu = IMU(i2c)
@@ -69,8 +68,8 @@ try:
 				log("Sending motors...")
 				motors = msg.get("motors", [1500]*6)
 				check_temp_time = msg.get("check_temp_time", check_temp_time)
-				#ard.send_pwm(motors)
-				#ard.get_message()
+				ard.send_pwm(motors)
+				ard.get_message()
 			time.sleep(.005)
 		except ConnectionResetError:
 			pc.reconnect()
