@@ -38,7 +38,7 @@ def motor_speed_calc_raw(matrix, roll=0, pitch=0, yaw=0, throttle=0, forward=0, 
     return k * m
 
 def motor_speed_calc(roll=0, pitch=0, yaw=0, throttle=0, forward=0, lateral=0):
-    # sum up vertical and planar components
+    # find vertical and planar components
     vert = motor_speed_calc_raw(vert_m, pitch=pitch, roll=roll, throttle=throttle)
     plan = motor_speed_calc_raw(plan_m, yaw=yaw, forward=forward, lateral=lateral)
 

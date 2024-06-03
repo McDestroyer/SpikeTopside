@@ -1,7 +1,5 @@
 """Provides an interface for a game controller."""
 
-import pickle
-import time
 import pygame
 from pygame.locals import *
 
