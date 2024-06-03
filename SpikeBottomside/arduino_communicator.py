@@ -98,7 +98,7 @@ class Arduino:
         """
         message: bytes = self.serial_port.readline()
 
-        if not message.isspace():
+        if message and not message.isspace():
             message = message.decode()
 
         return message

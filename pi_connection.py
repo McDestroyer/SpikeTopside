@@ -26,14 +26,14 @@ class PiConnection:
     """
 
 
-    TCP_IP = "172.17.254.121"
+    TCP_IP = "169.254.6.161"
     TCP_PORT = 5005
 
     def __init__(self, recv_timeout=3):
         """Initialize a PiConnection.
 
         Args:
-            recv_timeout (int, optional): Time to wait for a reply from Pi. Defaults to 5.
+            recv_timeout (int, optional): Time to wait for a reply from Pi. Defaults to 3.
         """
         self.s = None
 

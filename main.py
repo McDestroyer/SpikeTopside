@@ -26,11 +26,12 @@ root = tk.Tk()
 root.wm_title("ROV monitor")
 dash = Dashboard(root)
 
-# Lables
+# Labels
 dash.put_label("Height",        2, 2,   "Height")
 dash.put_label("FPS",           3, 2,   "FPS")
 dash.put_label("Quality",       4, 2,   "Quality")
 dash.put_label("Temp interval", 5, 2,   "Temp interval")
+dash.put_label("Temp",          6, 2,   "Temp", cspan=3)
 
 # Slider bars
 dash.put_scale("Height",        2, 3,   50, 300, 150, cspan=2)
@@ -59,10 +60,8 @@ while True:
             lateral, forward = cont.get_left()
             yaw, pitch = cont.get_right()
             throttle = cont.get_trigger()
-
-
             # convert to motor speeds
-            motor_speeds = motor_speed_calc(0, pitch, yaw, throttle, forward, lateral)
+            motor_speeds = motor_speed_calc(0, pitch, yaw, throttle, forward, -lateral)
 
             # set motors
             pi.set_motors(motor_speeds)
@@ -80,7 +79,7 @@ while True:
             for i in range(min(2, len(pi.frames))):
                 dash.update_display(f"frame{i}", pi.frames[i])
 
-            print(pi.temp)
+            dash.set_label("Temp", f"Temp: {pi.temp} C")
 
             #show_frame(pi.frames, pi.imu)
             
