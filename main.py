@@ -11,7 +11,7 @@ from pi_connection import PiConnection
 from motors import motor_speed_calc
 from controller import Controller
 
-#from gui import show_frame, window, get_config, get_temp_interval
+from pid import PIDController
 
 from dashboard import Dashboard
 import tkinter as tk
@@ -47,7 +47,28 @@ dash.put_image("sideview",      1, 4,   125, 125, "assets/sideview.png")
 dash.put_display("frame0",      1, 0,   rspan=5)
 dash.put_display("frame1",      6, 0,   rspan=5)
 
+# Yaw rate PID
+dash.put_label("Yaw PID enabled", 2, 5, "Yaw PID enabled? (0/1)")
+dash.put_label("Yaw KP",        3, 5, "Yaw KP")
+dash.put_label("Yaw KI",        4, 5, "Yaw KI")
+dash.put_label("Yaw KD",        5, 5, "Yaw KD")
+dash.put_label("Yaw I region",  6, 5, "Yaw I_region")
+dash.put_label("Yaw I max",     7, 5, "Yaw I_max")
+
+dash.put_entry("Yaw PID enabled", 2, 6, float, "0")
+dash.put_entry("Yaw KP",        3, 6,   float, "0")
+dash.put_entry("Yaw KI",        4, 6,   float, "0")
+dash.put_entry("Yaw KD",        5, 6,   float, "0")
+dash.put_entry("Yaw I region",  6, 6,   float, "0")
+dash.put_entry("Yaw I max",     7, 6,   float, "0")
+
+dash.put_label("Yaw rate", 3, 7, "Yaw rate: N/A")
+dash.put_label("Target", 4, 7, "Target rate: N/A")
+dash.put_label("PID output", 5, 7, "PID output: N/A")
+
 dash.pack()
+
+yaw_PID = PIDController(0, 0, 0, 0, 0)
 
 while True:
     pi.setup_socket()
@@ -60,6 +81,25 @@ while True:
             lateral, forward = cont.get_left()
             yaw, pitch = cont.get_right()
             throttle = cont.get_trigger()
+            
+            if dash.get_entry("Yaw PID enabled") and pi.imu is not None:
+                yaw_PID.KP = dash.get_entry("Yaw KP", 0)
+                yaw_PID.KI = dash.get_entry("Yaw KI", 0)
+                yaw_PID.KD = dash.get_entry("Yaw KD", 0)
+                yaw_PID.I_region = dash.get_entry("Yaw I region", 0)
+                yaw_PID.I_max = dash.get_entry("Yaw I max", 0)
+                
+                target = yaw*10 # deg/s
+                yaw_rate = pi.imu.get("yaw rate", 0)
+                yaw = yaw_PID.calculate(yaw_rate, target)
+                
+                dash.put_label("Yaw rate", f"Yaw rate: {yaw_rate}")
+                dash.put_label("Target", f"Target rate: {target}")
+                dash.put_label("PID output", f"PID output: {yaw}")
+                
+                # constrain
+                yaw = min(1, max(-1, yaw))
+            
             # convert to motor speeds
             motor_speeds = motor_speed_calc(0, pitch, yaw, throttle, forward, -lateral)
 
