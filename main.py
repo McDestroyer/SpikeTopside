@@ -49,6 +49,8 @@ dash.put_display("frame1",      6, 0,   rspan=5)
 
 dash.pack()
 
+# ssh rovrunners@192.168.2.2
+
 while True:
     pi.setup_socket()
     try:
@@ -77,7 +79,8 @@ while True:
             dash.rotate_image("sideview", pi.imu.get("pitch", 0))
 
             for i in range(min(2, len(pi.frames))):
-                dash.update_display(f"frame{i}", pi.frames[i])
+                if pi.frames[i] is not None:
+                    dash.update_display(f"frame{i}", pi.frames[i])
 
             dash.set_label("Temp", f"Temp: {pi.temp} C")
 
@@ -86,7 +89,7 @@ while True:
             root.update()
 
     except ConnectionError as e:
-        print(e.with_traceback())
+        print(e.with_traceback(e.__traceback__))
     except tk.TclError:
         pi.close()
         print("Window closed.")

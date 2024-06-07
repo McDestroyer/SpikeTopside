@@ -26,7 +26,7 @@ class PiConnection:
     """
 
 
-    TCP_IP = "169.254.6.161"
+    TCP_IP = "192.168.2.2"
     TCP_PORT = 5005
 
     def __init__(self, recv_timeout=3):
@@ -52,9 +52,15 @@ class PiConnection:
 
     def setup_socket(self) -> None:
         """Initialize the socket connection"""
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        self.s.connect((self.TCP_IP, self.TCP_PORT))
+        start = time.time()
+        while time.time() < start + 5:
+            try:
+                self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                self.s.connect((self.TCP_IP, self.TCP_PORT))
+                break
+            except ConnectionRefusedError as e:
+                print(e.with_traceback(e.__traceback__))
 
     def set_camera(self, fps=None, quality=None, height=None):
         """Set camera compression parameters."""
