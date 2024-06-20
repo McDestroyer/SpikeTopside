@@ -4,7 +4,10 @@ import numpy as np
 # best to keep it obvious what it's doing and quick to debug
 
 # use to set polarity and adjust power
-motor_coeffs = np.array([-0.6, 0.6, -0.6, -0.6, 1.0, 1.0])
+motor_coeffs = np.array([-0.6, 0.6, 0.6, -0.6, 1.0, -1.0])
+
+# Flipped 6
+# Flipped 3
 
 
 # same matrix as BlueOS, but I split it into the vertical and planar components

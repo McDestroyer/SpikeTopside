@@ -69,6 +69,7 @@ try:
 				motors = msg.get("motors", [1500]*6)
 				check_temp_time = msg.get("check_temp_time", check_temp_time)
 				ard.send_pwm(motors)
+				print(motors)
 				ard.get_message()
 			time.sleep(.005)
 		except ConnectionResetError:
