@@ -40,6 +40,8 @@ class PiConnection:
         self.config = {"fps": 20, "quality": 40, "height": 200}
         self.motors = []
 
+        self.send_reset_ard = False
+
         self.imu = None
         self.temp = None
 
@@ -70,6 +72,9 @@ class PiConnection:
             self.config["quality"] = quality
         if height is not None and height > 0:
             self.config["height"] = height
+    
+    def reset_ard(self):
+        self.send_reset_ard = True
 
     def set_motors(self, motors):
         """Set motor outputs."""
@@ -80,7 +85,8 @@ class PiConnection:
 
     def update(self):
         """Perform a data exchange with the Pi and PC"""
-        out_data = {"config": self.config, "motors": self.motors}
+        out_data = {"config": self.config, "motors": self.motors, "reset_ard": self.send_reset_ard}
+        self.send_reset_ard = False
         if self.check_temp_time is not None:
             out_data["check_temp_time"] = self.check_temp_time
         self._send(pickle.dumps(out_data))

@@ -39,6 +39,7 @@ dash.put_scale("FPS",           3, 3,   1, 30, 15, cspan=2)
 dash.put_scale("Quality",       4, 3,   1, 100, 75, cspan=2)
 dash.put_scale("Temp interval", 5, 3,   1, 3000, 1000, cspan=2)
 
+
 # Orientation markers
 dash.put_image("topview",       1, 2,   125, 125, "assets/topview.png", cspan=2)
 dash.put_image("sideview",      1, 4,   125, 125, "assets/sideview.png")
@@ -72,6 +73,10 @@ while True:
                         quality=dash.get_scale("Quality"),
                         height=dash.get_scale("Height"))
             pi.set_check_temp_time(dash.get_scale("Temp interval") / 1000.0)
+
+            if cont.get_y_button():
+                pi.reset_ard()
+
             # perform exchange w/Pi
             pi.update()
 

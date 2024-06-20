@@ -72,7 +72,7 @@ def nums_to_bytes(numbers) -> bytes:
 
 
 class Arduino:
-    def __init__(self, port: str = '/dev/ttyACM0', baud_rate: int = 9600) -> None:
+    def __init__(self, port: str = '/dev/ttyACM0', baud_rate: int = 115200) -> None:
         self.serial_port = serial.Serial(port, baud_rate, timeout=0.02)
     
     def send_stop(self):
@@ -102,6 +102,12 @@ class Arduino:
             message = message.decode()
 
         return message
+
+    def reset(self):
+        self.serial_port.setDTR(False)
+        time.sleep(1)
+        self.serial_port.flushInput()
+        self.setDTR(True)
 
     def send_pwm(self, pwm_values: tuple[int,]) -> None:
         """Send PWM values to the Arduino.
