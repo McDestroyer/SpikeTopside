@@ -118,7 +118,7 @@ class PiConnection:
                 raise ConnectionError(
                     TIMEOUT_MSG.format(length_bytes, remaining)
                 )
-            
+
             # attempt to read remaining bytes
             length_bytes += self.s.recv(remaining)
 

@@ -13,7 +13,7 @@ def decode(frame_data, height=300):
     # decompress
     frame = cv2.imdecode(img, 1)
 
-    h, w, c = frame.shape
+    h, w, _ = frame.shape
 
     # scale so height is constant regardless of actual resolution
     scaling = h / height
