@@ -76,7 +76,7 @@ while True:
             pi.update()
 
             dash.rotate_image("topview", pi.imu.get("yaw", 0))
-            dash.rotate_image("sideview", pi.imu.get("pitch", 0))
+            dash.rotate_image("sideview", pi.imu.get("roll", 0))
 
             for i in range(min(2, len(pi.frames))):
                 if pi.frames[i] is not None:
