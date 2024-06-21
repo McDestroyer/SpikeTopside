@@ -48,7 +48,7 @@ def motor_speed_calc(roll=0, pitch=0, yaw=0, throttle=0, forward=0, lateral=0):
 
     # multiply coeffs in
     speeds = list((vert + plan) * motor_coeffs)
-    print(speeds)
+    # print(speeds)
 
     result = []
 
