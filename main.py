@@ -42,7 +42,8 @@ dash.put_scale("Temp interval", 5, 3,   1, 3000, 1000, cspan=2)
 
 # Orientation markers
 dash.put_image("topview",       1, 2,   125, 125, "assets/topview.png", cspan=2)
-dash.put_image("sideview",      1, 4,   125, 125, "assets/sideview.png")
+dash.put_image("sideview",      1, 4,   125, 125, "assets/sideview.png", cspan=2)
+dash.put_image("frontview",      1, 6,   125, 125, "assets/sideview.png", cspan=2)
 
 # Cameras
 dash.put_display("frame0",      1, 0,   rspan=5)
@@ -81,6 +82,7 @@ while True:
             pi.update()
 
             dash.rotate_image("topview", pi.imu.get("yaw", 0))
+            dash.rotate_image("frontview", pi.imu.get("pitch", 0))
             dash.rotate_image("sideview", pi.imu.get("roll", 0))
 
             for i in range(min(2, len(pi.frames))):
