@@ -64,7 +64,7 @@ while True:
             yaw, pitch = cont.get_right()
             throttle = cont.get_trigger()
             # convert to motor speeds
-            motor_speeds = motor_speed_calc(0, pitch, yaw, throttle, forward, -lateral)
+            motor_speeds = motor_speed_calc(0, - pitch, yaw, throttle, forward, -lateral)
 
             # set motors
             pi.set_motors(motor_speeds)

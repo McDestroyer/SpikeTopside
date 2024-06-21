@@ -4,7 +4,10 @@ import numpy as np
 # best to keep it obvious what it's doing and quick to debug
 
 # use to set polarity and adjust power
-motor_coeffs = np.array([-0.6, 0.6, 0.6, -0.6, 1.0, -1.0])
+motor_coeffs = np.array([-1, 1, -1, -1, 1.0, -1.0])
+
+reverse_coeffs = [0.6, 0.5, 0.6, 1, .8, 0.6]
+forward_coeffs = [1, 1, 1, 0.5, 1, 1]
 
 # Flipped 6
 # Flipped 3
@@ -44,7 +47,18 @@ def motor_speed_calc(roll=0, pitch=0, yaw=0, throttle=0, forward=0, lateral=0):
     plan = motor_speed_calc_raw(plan_m, yaw=yaw, forward=forward, lateral=lateral)
 
     # multiply coeffs in
-    return (vert + plan) * motor_coeffs
+    speeds = list((vert + plan) * motor_coeffs)
+    print(speeds)
+
+    result = []
+
+    for i in range(len(speeds)):
+        speed = speeds[i]
+        if speed < 0:
+            result.append(reverse_coeffs[i] * speed)
+        else:
+            result.append(forward_coeffs[i] * speed)
+    return np.array(result)
 
 def motor_speed_pwm(motors, min_pwm=1100, max_pwm=1900):
     slope = (max_pwm-min_pwm)/(1.0 - (-1.0))
