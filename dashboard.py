@@ -104,16 +104,18 @@ if __name__ == "__main__":
     dashboard = Dashboard(root)
 
     dashboard.put_label("Label", 1, 2, "Hi!")
-    dashboard.put_scale("Scale1", 1, 3, 12, 100, 50)
+    dashboard.put_scale("Scale1", 1, 3, 0, 359, 50)
 
     dashboard.put_entry("Place", 2, 1, float, "23")
 
-    dashboard.put_image("topside", 150, 125, 200, 200, "assets/topview.png")
+    dashboard.put_image("topview", 3, 1, 200, 200, "assets/topview.png")
+    dashboard.put_image("sideview", 3, 2, 200, 200, "assets/sideview.png")
 
     dashboard.pack()
 
     while 1:
-        dashboard.rotate_image("topside", dashboard.get_entry("Place", 0))
+        dashboard.rotate_image("topview", dashboard.get_entry("Place", 0))
+        dashboard.rotate_image("sideview", dashboard.get_scale("Scale1"))
 
         root.update_idletasks()
         root.update()
