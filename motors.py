@@ -6,7 +6,7 @@ import numpy as np
 # use to set polarity and adjust power
 motor_coeffs = np.array([-1, 1, -1, -1, 1.0, -1.0])
 
-reverse_coeffs = [0.6, 0.5, 0.6, 1, .8, 0.6]
+reverse_coeffs = [0.6, 0.5, 0.6, 1, 0.8, 0.6]
 forward_coeffs = [1, 1, 1, 0.5, 1, 1]
 
 # Flipped 6
@@ -15,21 +15,32 @@ forward_coeffs = [1, 1, 1, 0.5, 1, 1]
 
 # same matrix as BlueOS, but I split it into the vertical and planar components
 # for convienience
-plan_m = np.array([[0.0,  0.0,  1.0,  0.0,  1.0, -1.0],
-                   [0.0,  0.0, -1.0,  0.0,  1.0,  1.0],
-                   [0.0,  0.0,  1.0,  0.0,  1.0,  1.0],
-                   [0.0,  0.0, -1.0,  0.0,  1.0, -1.0],
-                   [0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-                   [0.0,  0.0,  0.0,  0.0,  0.0,  0.0]])
+plan_m = np.array(
+    [
+        [0.0, 0.0, 1.0, 0.0, 1.0, -1.0],
+        [0.0, 0.0, -1.0, 0.0, 1.0, 1.0],
+        [0.0, 0.0, 1.0, 0.0, 1.0, 1.0],
+        [0.0, 0.0, -1.0, 0.0, 1.0, -1.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    ]
+)
 
-vert_m = np.array([[0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-                   [0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-                   [0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-                   [0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-                   [0.0,  1.0,  0.0, -1.0,  0.0,  0.0],
-                   [0.0, -1.0,  0.0, -1.0,  0.0,  0.0]])
+vert_m = np.array(
+    [
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, -1.0, 0.0, 0.0],
+        [0.0, -1.0, 0.0, -1.0, 0.0, 0.0],
+    ]
+)
 
-def motor_speed_calc_raw(matrix, roll=0, pitch=0, yaw=0, throttle=0, forward=0, lateral=0):
+
+def motor_speed_calc_raw(
+    matrix, roll=0, pitch=0, yaw=0, throttle=0, forward=0, lateral=0
+):
     v = np.array([roll, pitch, yaw, throttle, forward, lateral])
     # do initial multiplication
     m = matrix @ v
@@ -41,25 +52,21 @@ def motor_speed_calc_raw(matrix, roll=0, pitch=0, yaw=0, throttle=0, forward=0, 
     k = np.max(np.abs(v)) / np.max(np.abs(m))
     return k * m
 
+
 def motor_speed_calc(roll=0, pitch=0, yaw=0, throttle=0, forward=0, lateral=0):
     # find vertical and planar components
     vert = motor_speed_calc_raw(vert_m, pitch=pitch, roll=roll, throttle=throttle)
     plan = motor_speed_calc_raw(plan_m, yaw=yaw, forward=forward, lateral=lateral)
 
     # multiply coeffs in
-    speeds = list((vert + plan) * motor_coeffs)
-    # print(speeds)
+    speeds = (vert + plan) * motor_coeffs
 
-    result = []
+    forward_speeds = speeds.clip(min=0) * forward_coeffs
+    reverse_speeds = speeds.clip(max=0) * reverse_coeffs
 
-    for i in range(len(speeds)):
-        speed = speeds[i]
-        if speed < 0:
-            result.append(reverse_coeffs[i] * speed)
-        else:
-            result.append(forward_coeffs[i] * speed)
-    return np.array(result)
+    return forward_speeds + reverse_speeds
+
 
 def motor_speed_pwm(motors, min_pwm=1100, max_pwm=1900):
-    slope = (max_pwm-min_pwm)/(1.0 - (-1.0))
-    return slope*(motors - 1) + max_pwm
+    slope = (max_pwm - min_pwm) / (1.0 - (-1.0))
+    return slope * (motors - 1) + max_pwm
